@@ -10,7 +10,7 @@ O app Madeireiro serviu só de referência para entender o fluxo e quais campos 
 
 ## Fora da v1
 
-Financeiro, notas fiscais, floresta (UPA, UCA, árvores, toras), frota, WhatsApp, IA, vários usuários e sincronização automática entre aparelhos.
+Importação de planilhas do Madeireiro, código QR do pacote, financeiro, notas fiscais, floresta (UPA, UCA, árvores, toras), frota, WhatsApp, IA, vários usuários e sincronização automática entre aparelhos.
 
 ## Decisões
 
@@ -27,7 +27,7 @@ Financeiro, notas fiscais, floresta (UPA, UCA, árvores, toras), frota, WhatsApp
 4. **Baixa:** saída do pacote do estoque, inteira ou parcial, vinculada a um romaneio de venda.
 5. **Romaneio de venda:** cliente, placa, nota fiscal, DOF, guia florestal (GF), itens (pacote e quantidade), totais em m³, relatório em PDF.
 6. **Cadastros:** espécies (nome, nome científico, apelido), bitolas, locais de estoque, clientes, veículos.
-7. **Backup:** exportar e importar tudo em um arquivo; importar planilhas do Madeireiro (fase posterior).
+7. **Backup:** exportar e importar tudo em um arquivo; lembrete de backup. A importação de planilhas do Madeireiro não faz parte da v1.
 
 ## Modelo de dados
 
@@ -45,10 +45,13 @@ Todo registro tem: `id`, `criadoEm`, `alteradoEm`, `excluidoEm` (exclusão lógi
 
 ## Estrutura de código
 
-- `dados/`: acesso ao IndexedDB, um módulo por cadastro.
-- `regras/`: funções puras (m³ bruto e comercial, abono, saldo de pacote, status de secagem, totais do romaneio).
-- `telas/`: cada tela, sem regra de negócio dentro.
-- `servico/`: backup, PDF, service worker.
+Tudo fica em `js/`:
+
+- `dados/`: acesso ao IndexedDB (e versão em memória para testes), repositório genérico, backup.
+- `regras/`: funções puras (m³ bruto e comercial, abono, saldo de pacote, status de secagem, totais do romaneio, validações, formatação).
+- `servicos/`: operações de cadastros, pacotes, estufa e romaneios; todas as gravações passam por uma fila única.
+- `telas/`: cada tela, sem regra de negócio dentro; `ui.js` tem os componentes comuns.
+- Na raiz: `sw.js` (service worker, modo offline), `manifest.webmanifest`, `servir.js` (servidor local de desenvolvimento).
 
 ## Regras principais
 
