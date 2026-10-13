@@ -22,7 +22,7 @@ Financeiro, notas fiscais, floresta (UPA, UCA, árvores, toras), frota, WhatsApp
 ## Telas
 
 1. **Estoque:** lista de pacotes com filtros (espécie, bitola, qualidade, local, status, seco ou verde). Totais de peças e m³.
-2. **Pacote:** cadastro e detalhe. Tipos MS (serrado), PB (beneficiado) e PF (produto final). Campos: número, número AUTEX, número de controle interno, espécie, bitola (espessura e largura), comprimento, quantidade, peso, qualidade, qtd. de amarras, abono comercial, observação, local de estoque, pacote de origem, datas de recebimento, entrada no estoque e finalização, código QR.
+2. **Pacote:** cadastro e detalhe. Tipos MS (serrado), PB (beneficiado) e PF (produto final). Campos: número, número AUTEX, número de controle interno, espécie, bitola (espessura e largura), comprimento, quantidade, peso, qualidade, qtd. de amarras, abono comercial, observação, local de estoque, pacote de origem, datas de recebimento, entrada no estoque e finalização. O código QR fica para depois da v1.
 3. **Estufa:** entrada e saída de pacotes, com umidade de entrada e de saída e tipo de secagem. Ao sair, o pacote passa a seco.
 4. **Baixa:** saída do pacote do estoque, inteira ou parcial, vinculada a um romaneio de venda.
 5. **Romaneio de venda:** cliente, placa, nota fiscal, DOF, guia florestal (GF), itens (pacote e quantidade), totais em m³, relatório em PDF.
