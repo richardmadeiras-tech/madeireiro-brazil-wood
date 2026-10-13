@@ -4,9 +4,11 @@ import { criarServicos } from './servicos/index.js';
 import { precisaLembrarBackup } from './dados/backup.js';
 import { lerUltimoBackup } from './dados/ultimoBackup.js';
 import { h } from './ui.js';
+import { montarCadastros } from './telas/cadastros.js';
 
 // -- telas: cada tarefa de tela acrescenta uma linha de import acima e uma entrada abaixo --
 const TELAS = {
+  cadastros: montarCadastros,
 };
 
 async function mostrarAviso(contexto) {
