@@ -10,6 +10,8 @@ export function validarBitola(b) {
   const erros = [];
   if (!(b.espessura > 0)) erros.push('A espessura deve ser um número maior que zero, em cm (use vírgula, por exemplo 2,5).');
   if (!(b.largura > 0)) erros.push('A largura deve ser um número maior que zero, em cm (use vírgula, por exemplo 14,5).');
+  if (b.espessura > 100) erros.push('A espessura não pode passar de 100 cm.');
+  if (b.largura > 100) erros.push('A largura não pode passar de 100 cm.');
   return erros;
 }
 

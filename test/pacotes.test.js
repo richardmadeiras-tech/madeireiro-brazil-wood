@@ -107,3 +107,26 @@ test('listarComResumo ordena por tipo e número natural e não quebra com cadast
   const nomes = (await pacotes.listarComResumo()).map((l) => `${l.pacote.tipo}${l.pacote.numero}`);
   assert.deepEqual(nomes, ['MS9', 'MS20', 'MS100', 'PB1']);
 });
+
+test('pacote com baixa não aceita mudar medidas nem abono, mas aceita observação, qualidade e quantidade acima do baixado', async () => {
+  const { dados, cen, pacotes } = await montar();
+  await dados.itens.criar({ romaneioId: 'r1', pacoteId: cen.pacote.id, quantidadeBaixada: 40 });
+  const base = { numero: '100', quantidade: '100' };
+  const bloqueado = /medidas e abono não podem mudar/;
+  await assert.rejects(() => pacotes.atualizar(cen.pacote.id, entrada(cen, { ...base, comprimento: 3.5 })), bloqueado);
+  await assert.rejects(() => pacotes.atualizar(cen.pacote.id, entrada(cen, { ...base, abonoComprimento: 0.05 })), bloqueado);
+  await assert.rejects(() => pacotes.atualizar(cen.pacote.id, entrada(cen, { ...base, abonoLargura: '1' })), bloqueado);
+  await assert.rejects(() => pacotes.atualizar(cen.pacote.id, entrada(cen, { ...base, abonoEspessura: '1' })), bloqueado);
+  await assert.rejects(() => pacotes.atualizar(cen.pacote.id, entrada(cen, { ...base, somarAbono: true })), bloqueado);
+  const outra = await dados.bitolas.criar({ espessura: 4, largura: 10 });
+  await assert.rejects(() => pacotes.atualizar(cen.pacote.id, entrada(cen, { ...base, bitolaId: outra.id })), bloqueado);
+  const ok = await pacotes.atualizar(cen.pacote.id, entrada(cen, { ...base, quantidade: '120', observacao: 'x', qualidade: 'A' }));
+  assert.equal(ok.quantidade, 120);
+  assert.equal(ok.qualidade, 'A');
+});
+
+test('pacote sem baixa pode mudar medidas e abono', async () => {
+  const { cen, pacotes } = await montar();
+  const ok = await pacotes.atualizar(cen.pacote.id, entrada(cen, { numero: '100', comprimento: 3.5, abonoLargura: '1' }));
+  assert.equal(ok.comprimento, 3.5);
+});

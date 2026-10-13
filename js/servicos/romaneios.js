@@ -33,7 +33,7 @@ export function criarServicoRomaneios(dados) {
     if (r.veiculoId) {
       const veiculo = await dados.veiculos.obter(r.veiculoId);
       if (!veiculo || veiculo.excluidoEm) erros.push('O veículo escolhido não existe mais.');
-      else if (!r.placa) r.placa = veiculo.placa;
+      else r.placa = veiculo.placa;
     }
     exigir(erros);
     return r;

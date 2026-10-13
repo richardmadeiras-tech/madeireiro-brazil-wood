@@ -12,7 +12,7 @@ export function formatarData(iso) {
   return `${d}/${m}/${a}`;
 }
 
-const NUMERO_BR = /^\d{1,3}(\.\d{3})*(,\d+)?$|^\d+(,\d+)?$/;
+const NUMERO_BR = /^[1-9]\d{0,2}(\.\d{3})+(,\d+)?$|^\d+(,\d+)?$/;
 
 export function lerNumero(texto) {
   const t = String(texto ?? '').trim();

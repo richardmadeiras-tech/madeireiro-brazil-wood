@@ -57,3 +57,12 @@ test('status de secagem: verde, em estufa e seco', () => {
 test('há um rótulo em português para cada status', () => {
   assert.equal(ROTULO_SECAGEM.em_estufa, 'Em estufa');
 });
+
+test('limites plausíveis: aceita no limite e recusa acima', () => {
+  assert.deepEqual(validarPacote({ ...base, comprimento: 30 }), []);
+  assert.equal(validarPacote({ ...base, comprimento: 30.1 }).length, 1);
+  assert.deepEqual(validarPacote({ ...base, abonoEspessura: 10, abonoLargura: 10, abonoComprimento: 1 }), []);
+  assert.equal(validarPacote({ ...base, abonoEspessura: 10.5 }).length, 1);
+  assert.equal(validarPacote({ ...base, abonoLargura: 11 }).length, 1);
+  assert.equal(validarPacote({ ...base, abonoComprimento: 1.5 }).length, 1);
+});

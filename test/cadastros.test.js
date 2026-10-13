@@ -82,3 +82,25 @@ test('não exclui cliente nem veículo usados em romaneio ativo', async () => {
   await assert.rejects(() => cad.pessoas.excluir(cen.cliente.id), /em uso/);
   await assert.rejects(() => cad.veiculos.excluir(v.id), /em uso/);
 });
+
+test('bitola vendida não muda de medida; sem baixa, mesmo em uso, pode mudar', async () => {
+  const dados = criarDadosDeTeste();
+  const cen = await prepararCenario(dados);
+  const cad = criarServicoCadastros(dados);
+  await cad.bitolas.atualizar(cen.bitola.id, { espessura: 6, largura: 15 });
+  assert.equal((await dados.bitolas.obter(cen.bitola.id)).espessura, 6);
+  const item = await dados.itens.criar({ romaneioId: 'r1', pacoteId: cen.pacote.id, quantidadeBaixada: 10 });
+  await assert.rejects(() => cad.bitolas.atualizar(cen.bitola.id, { espessura: 7, largura: 15 }), /já foi vendida/);
+  await assert.rejects(() => cad.bitolas.atualizar(cen.bitola.id, { espessura: 6, largura: 16 }), /já foi vendida/);
+  await cad.bitolas.atualizar(cen.bitola.id, { espessura: 6, largura: 15 });
+  await dados.itens.excluir(item.id);
+  await cad.bitolas.atualizar(cen.bitola.id, { espessura: 7, largura: 15 });
+  assert.equal((await dados.bitolas.obter(cen.bitola.id)).espessura, 7);
+});
+
+test('bitola aceita até 100 cm e recusa acima', async () => {
+  const { cad } = montar();
+  await cad.bitolas.criar({ espessura: 100, largura: 100 });
+  await assert.rejects(() => cad.bitolas.criar({ espessura: 101, largura: 5 }), /espessura/);
+  await assert.rejects(() => cad.bitolas.criar({ espessura: 5, largura: 100.5 }), /largura/);
+});

@@ -19,6 +19,7 @@ export function validarPacote(p) {
   if (!p.especieId) erros.push('Escolha a espécie.');
   if (!p.bitolaId) erros.push('Escolha a bitola.');
   if (!(p.comprimento > 0)) erros.push('O comprimento deve ser um número maior que zero (use vírgula, por exemplo 3,5).');
+  if (p.comprimento > 30) erros.push('O comprimento não pode passar de 30 m.');
   if (!Number.isInteger(p.quantidade) || p.quantidade < 1) {
     erros.push('A quantidade deve ser um número inteiro de 1 ou mais.');
   }
@@ -27,6 +28,14 @@ export function validarPacote(p) {
     if (v !== undefined && v !== null && v !== '' && !(Number(v) >= 0)) {
       erros.push(`${nome} deve ser um número sem sinal de menos (use vírgula nos decimais).`);
     }
+  }
+  const limites = [
+    ['abonoEspessura', 'O abono de espessura', 10, 'cm'],
+    ['abonoLargura', 'O abono de largura', 10, 'cm'],
+    ['abonoComprimento', 'O abono de comprimento', 1, 'm'],
+  ];
+  for (const [campo, nome, max, un] of limites) {
+    if (Number(p[campo]) > max) erros.push(`${nome} não pode passar de ${max} ${un}.`);
   }
   return erros;
 }

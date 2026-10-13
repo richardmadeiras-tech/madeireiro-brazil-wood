@@ -69,12 +69,28 @@ export function criarServicoCadastros(dados) {
       return limpo;
     }
 
+    async function conferirBitolaVendida(id, nova) {
+      const atual = await repo.obter(id);
+      if (!atual || (atual.espessura === nova.espessura && atual.largura === nova.largura)) return;
+      const ativos = new Set(
+        (await dados.pacotes.listar()).filter((p) => p.bitolaId === id).map((p) => p.id),
+      );
+      const vendida = (await dados.itens.listar()).some((i) => ativos.has(i.pacoteId));
+      if (vendida) {
+        throw new ErroDeRegra(['Não dá para alterar: esta bitola já foi vendida em romaneios. Cadastre uma bitola nova.']);
+      }
+    }
+
     servicos[tipo] = {
       rotulo: def.rotulo,
       descricao: def.descricao,
       listar: () => repo.listar(),
       criar: async (entrada) => repo.criar(await preparar(entrada, null)),
-      atualizar: async (id, entrada) => repo.atualizar(id, await preparar(entrada, id)),
+      atualizar: async (id, entrada) => {
+        const limpo = await preparar(entrada, id);
+        if (tipo === 'bitolas') await conferirBitolaVendida(id, limpo);
+        return repo.atualizar(id, limpo);
+      },
       excluir: async (id) => {
         const [colecao, campo] = def.uso;
         const emUso = (await dados[colecao].listar()).some((r) => r[campo] === id);

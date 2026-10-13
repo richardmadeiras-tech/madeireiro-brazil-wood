@@ -46,3 +46,12 @@ test('numeroParaCampo e numeroDoCampo fazem o caminho de ida e volta', () => {
   assert.equal(numeroDoCampo('  '), '');
   assert.ok(Number.isNaN(numeroDoCampo('2.5')));
 });
+
+test('lerNumero não lê zero à esquerda como milhar', () => {
+  assert.ok(Number.isNaN(lerNumero('0.050')));
+  assert.equal(lerNumero('1.200'), 1200);
+  assert.equal(lerNumero('2.500'), 2500);
+  assert.equal(lerNumero('1.234,56'), 1234.56);
+  assert.equal(lerNumero('12,5'), 12.5);
+  assert.equal(lerNumero('100'), 100);
+});

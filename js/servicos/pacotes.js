@@ -7,6 +7,10 @@ const opcional = (v) => (v === '' || v === null || v === undefined ? null : Numb
 const BITOLA_VAZIA = { espessura: 0, largura: 0 };
 const mapa = (lista) => new Map(lista.map((r) => [r.id, r]));
 
+const MEDIDAS_TRAVADAS = [
+  'bitolaId', 'comprimento', 'abonoComprimento', 'abonoLargura', 'abonoEspessura', 'somarAbono',
+];
+
 function limpar(e) {
   return {
     tipo: e.tipo,
@@ -78,6 +82,11 @@ export function criarServicoPacotes(dados) {
       const p = limpar(entrada);
       await conferirTudo(p, id);
       const baixado = quantidadeBaixada(id, await dados.itens.listar());
+      if (baixado > 0 && MEDIDAS_TRAVADAS.some((c) => (p[c] ?? null) !== (atual[c] ?? null))) {
+        throw new ErroDeRegra([
+          'Este pacote já tem baixas em romaneios: medidas e abono não podem mudar. Remova-o dos romaneios abertos antes.',
+        ]);
+      }
       if (p.quantidade < baixado) {
         throw new ErroDeRegra([`A quantidade não pode ficar abaixo do que já foi baixado (${baixado}).`]);
       }

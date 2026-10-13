@@ -133,3 +133,13 @@ test('listarResumo traz cliente e totais, do número maior para o menor', async 
   assert.equal(resumo[1].cliente.nome, 'Cliente Teste');
   assert.equal(resumo[1].totais.pecas, 40);
 });
+
+test('a placa sempre acompanha o veículo escolhido', async () => {
+  const { dados, cen, romaneios } = await montar();
+  const a = await dados.veiculos.criar({ placa: 'AAA1A11' });
+  const b = await dados.veiculos.criar({ placa: 'BBB2B22' });
+  const r = await romaneios.criar(entrada(cen, { placa: '', veiculoId: a.id }));
+  assert.equal(r.placa, 'AAA1A11');
+  const atualizado = await romaneios.atualizar(r.id, entrada(cen, { placa: r.placa, veiculoId: b.id }));
+  assert.equal(atualizado.placa, 'BBB2B22');
+});
