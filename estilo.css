@@ -1,0 +1,79 @@
+:root {
+  --verde: #2e5d34;
+  --verde-claro: #e4eedf;
+  --papel: #f6f3ea;
+  --texto: #1f2a1f;
+  --borda: #d6d0bd;
+  --erro: #a4262c;
+  --erro-fundo: #fbe9ea;
+  --aviso-fundo: #fff4d6;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 16px/1.45 system-ui, "Segoe UI", sans-serif; background: var(--papel); color: var(--texto); }
+.topo { background: var(--verde); color: #fff; padding: 10px 16px; }
+.topo h1 { font-size: 1.15rem; margin: 0 0 8px; }
+#menu { display: flex; flex-wrap: wrap; gap: 6px; }
+#menu a { color: #fff; text-decoration: none; padding: 6px 12px; border-radius: 6px; background: rgba(255, 255, 255, .14); }
+#menu a.ativo { background: #fff; color: var(--verde); font-weight: 600; }
+main { max-width: 1000px; margin: 0 auto; padding: 16px; }
+h2 { font-size: 1.1rem; margin: 20px 0 8px; }
+a { color: var(--verde); }
+
+.formulario, .filtros {
+  background: #fff; border: 1px solid var(--borda); border-radius: 8px; padding: 12px;
+  display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin: 12px 0;
+}
+.formulario h2 { grid-column: 1 / -1; margin: 0; }
+.formulario .erros, .formulario .acoes { grid-column: 1 / -1; }
+.campo { display: flex; flex-direction: column; gap: 3px; font-size: .9rem; }
+.campo input, .campo select { font: inherit; padding: 8px; border: 1px solid var(--borda); border-radius: 6px; background: #fff; width: 100%; }
+.campo-marcar { flex-direction: row; align-items: center; gap: 8px; }
+.campo-marcar input { width: auto; }
+.acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+
+button { font: inherit; padding: 8px 14px; border: 0; border-radius: 6px; background: var(--verde); color: #fff; cursor: pointer; }
+button.secundario { background: #e8e4d4; color: var(--texto); }
+button.perigo { background: var(--erro); }
+button.pequeno { padding: 4px 10px; font-size: .85rem; }
+.abas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+
+.erros { background: var(--erro-fundo); color: var(--erro); border: 1px solid var(--erro); border-radius: 6px; padding: 8px 12px; margin: 8px 0; }
+.erros:empty { display: none; }
+.erros p { margin: 2px 0; }
+.erro-grave { background: var(--erro-fundo); border: 1px solid var(--erro); border-radius: 8px; padding: 16px; }
+.lembrete { background: var(--aviso-fundo); padding: 8px 16px; border-bottom: 1px solid var(--borda); }
+.vazio { color: #666; font-style: italic; }
+.totais { font-weight: 600; margin: 8px 0; }
+.etiqueta { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: .8rem; background: #e8e4d4; }
+.etiqueta.seco { background: #d3ead3; }
+.etiqueta.em_estufa { background: #fde2b8; }
+.etiqueta.aberto { background: #fde2b8; }
+.etiqueta.finalizado { background: #d3ead3; }
+
+.cartao { background: #fff; border: 1px solid var(--borda); border-radius: 8px; padding: 10px 12px; margin: 8px 0; }
+.cartao form { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-top: 8px; }
+
+.rolagem { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--borda); vertical-align: top; }
+th { background: var(--verde-claro); font-size: .85rem; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 640px) {
+  main { padding: 12px; }
+  table, thead, tbody, tr, th, td { display: block; }
+  thead { position: absolute; left: -9999px; }
+  tr { border: 1px solid var(--borda); border-radius: 8px; margin-bottom: 10px; padding: 6px; background: #fff; }
+  td { border: 0; display: flex; justify-content: space-between; gap: 12px; text-align: right; padding: 4px 6px; }
+  td::before { content: attr(data-rotulo); font-weight: 600; text-align: left; color: #555; }
+}
+
+.folha-cabecalho { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 4px 16px; margin: 8px 0; }
+
+@media print {
+  body { background: #fff; }
+  .nao-imprimir, .topo, #menu { display: none !important; }
+  main { padding: 0; max-width: none; }
+  table { font-size: 12px; }
+  .cartao, .formulario { border: 0; }
+}
