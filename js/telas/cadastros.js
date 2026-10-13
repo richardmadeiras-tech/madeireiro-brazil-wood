@@ -93,13 +93,16 @@ export async function montarCadastros(contexto) {
       {
         titulo: 'Ações',
         valor: (r) => h('span', { class: 'acoes' },
-          h('button', { type: 'button', class: 'secundario pequeno', onclick: () => { editando = r; desenhar(); } }, 'Editar'),
+          h('button', { type: 'button', class: 'secundario pequeno', onclick: async () => { editando = r; await desenhar(); window.scrollTo(0, 0); } }, 'Editar'),
           h('button', {
             type: 'button',
             class: 'perigo pequeno',
             onclick: async () => {
               if (!confirmar(`Excluir "${servico.descricao(r)}"?`)) return;
-              if (await tentar(errosLista, () => servico.excluir(r.id))) await desenhar();
+              if (await tentar(errosLista, () => servico.excluir(r.id))) {
+                if (editando?.id === r.id) editando = null;
+                await desenhar();
+              }
             },
           }, 'Excluir')),
       },

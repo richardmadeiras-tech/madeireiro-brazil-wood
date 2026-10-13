@@ -27,6 +27,7 @@ a { color: var(--verde); }
 .formulario .erros, .formulario .acoes { grid-column: 1 / -1; }
 .campo { display: flex; flex-direction: column; gap: 3px; font-size: .9rem; }
 .campo input, .campo select { font: inherit; padding: 8px; border: 1px solid var(--borda); border-radius: 6px; background: #fff; width: 100%; }
+.campo input, .campo select { font-size: 1rem; }
 .campo-marcar { flex-direction: row; align-items: center; gap: 8px; }
 .campo-marcar input { width: auto; }
 .acoes { display: flex; gap: 8px; flex-wrap: wrap; }

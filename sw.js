@@ -1,4 +1,4 @@
-const VERSAO = 'madeireiro-brazil-wood-v1';
+const VERSAO = 'madeireiro-brazil-wood-v2';
 const ARQUIVOS = [
   './',
   'index.html',
@@ -55,14 +55,19 @@ self.addEventListener('activate', (ev) => {
 self.addEventListener('fetch', (ev) => {
   if (ev.request.method !== 'GET') return;
   ev.respondWith(
-    fetch(ev.request)
+    fetch(ev.request, { cache: 'no-cache' })
       .then((resposta) => {
         if (resposta.ok) {
           const copia = resposta.clone();
-          caches.open(VERSAO).then((c) => c.put(ev.request, copia));
+          ev.waitUntil(caches.open(VERSAO).then((c) => c.put(ev.request, copia)).catch(() => {}));
         }
         return resposta;
       })
-      .catch(() => caches.match(ev.request, { ignoreSearch: true })),
+      .catch(async () => {
+        const guardada = await caches.match(ev.request, { ignoreSearch: true });
+        if (guardada) return guardada;
+        if (ev.request.mode === 'navigate') return caches.match('index.html');
+        return Response.error();
+      }),
   );
 });

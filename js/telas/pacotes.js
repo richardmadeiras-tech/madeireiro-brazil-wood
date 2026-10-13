@@ -91,7 +91,10 @@ export async function montarPacotes(contexto) {
             class: 'perigo pequeno',
             onclick: async () => {
               if (!confirmar(`Excluir o pacote ${l.pacote.tipo} ${l.pacote.numero}?`)) return;
-              if (await tentar(errosLista, () => servicos.pacotes.excluir(l.pacote.id))) await desenhar();
+              if (await tentar(errosLista, () => servicos.pacotes.excluir(l.pacote.id))) {
+                if (editando?.id === l.pacote.id) editando = null;
+                await desenhar();
+              }
             },
           }, 'Excluir')),
       },

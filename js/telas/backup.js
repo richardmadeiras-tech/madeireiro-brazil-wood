@@ -37,12 +37,25 @@ export async function montarBackup(contexto) {
     mostrarEstado();
   }
 
+  let ocupado = false;
+  async function comTrava(botao, acao) {
+    if (ocupado) return false;
+    ocupado = true;
+    botao.disabled = true;
+    try {
+      return await acao();
+    } finally {
+      ocupado = false;
+      botao.disabled = false;
+    }
+  }
+
   async function escolherArquivo(ev) {
     previa.replaceChildren();
     const entrada = ev.target;
     const arquivo = entrada.files[0];
     if (!arquivo) return;
-    await tentar(erros, async () => {
+    const lido = await tentar(erros, async () => {
       let backup;
       try {
         backup = JSON.parse(await arquivo.text());
@@ -63,12 +76,13 @@ export async function montarBackup(contexto) {
           h('button', {
             type: 'button',
             class: 'perigo',
-            onclick: async () => {
+            onclick: async (ev) => {
+              if (ocupado) return;
               if (!confirmar('Substituir TODOS os dados deste aparelho pelo backup? Uma cópia dos dados atuais será baixada antes.')) return;
-              const ok = await tentar(erros, async () => {
+              const ok = await comTrava(ev.currentTarget, () => tentar(erros, async () => {
                 await exportar('copia-antes-da-importacao');
                 await importarBackup(armazem, backup);
-              });
+              }));
               if (ok) {
                 entrada.value = '';
                 previa.replaceChildren(h('p', { class: 'totais' }, 'Backup importado com sucesso. Abra o Estoque para conferir.'));
@@ -82,6 +96,7 @@ export async function montarBackup(contexto) {
           }, 'Cancelar')),
       );
     });
+    if (!lido) entrada.value = '';
   }
 
   mostrarEstado();
@@ -92,7 +107,7 @@ export async function montarBackup(contexto) {
     h('div', { class: 'acoes' },
       h('button', {
         type: 'button',
-        onclick: async () => { await tentar(errosExportar, () => exportar('backup-madeireiro')); },
+        onclick: async (ev) => { await comTrava(ev.currentTarget, () => tentar(errosExportar, () => exportar('backup-madeireiro'))); },
       }, 'Exportar backup agora')),
     errosExportar,
     h('h2', {}, 'Importar backup'),

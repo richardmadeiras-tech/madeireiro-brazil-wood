@@ -1,6 +1,6 @@
 # App Madeireiro Brazil Wood
 
-Controle de pacotes de madeira serrada, estufa, estoque e romaneios de venda da Brazil Wood Madeiras. Funciona no navegador do computador e do celular, inclusive sem internet. Os dados ficam guardados no próprio aparelho.
+Controle de pacotes de madeira serrada, estufa, estoque e romaneios de venda da Brazil Wood Madeiras. Funciona no navegador do computador e do celular, inclusive sem internet (depois de abrir o app uma vez por um endereço seguro: https ou localhost). Os dados ficam guardados no próprio aparelho.
 
 ## Rodar no computador
 
@@ -25,7 +25,7 @@ Controle de pacotes de madeira serrada, estufa, estoque e romaneios de venda da 
 
 ## Usar no celular
 
-O celular precisa abrir o app por um endereço seguro (https). O jeito mais simples é publicar a pasta num site estático gratuito (por exemplo, GitHub Pages) e abrir o endereço no celular; no Chrome, use "Adicionar à tela inicial". Abrindo pelo endereço do computador na rede local (`http://192.168...`) o app funciona, mas não instala nem guarda cópia para uso sem internet.
+O celular precisa abrir o app por um endereço seguro (https). O jeito mais simples é publicar a pasta num site estático gratuito (por exemplo, GitHub Pages) e abrir o endereço no celular; no Chrome, use "Adicionar à tela inicial". No iPhone: use "Adicionar à Tela de Início". O Safari pode apagar os dados de sites não instalados depois de alguns dias sem uso, então exporte backups com frequência. Quando sai uma versão nova, ela pode demorar a aparecer em conexão ruim; recarregar a página resolve. Abrindo pelo endereço do computador na rede local (`http://192.168...`) o app funciona, mas não instala nem guarda cópia para uso sem internet.
 
 ## Estrutura
 
@@ -34,6 +34,8 @@ O celular precisa abrir o app por um endereço seguro (https). O jeito mais simp
 - `js/servicos/`: regras de negócio que combinam cadastros (pacotes, estufa, romaneios).
 - `js/telas/`: uma tela por arquivo.
 - `sw.js`: service worker (offline). Ao criar um arquivo `.js` novo, inclua-o na lista `ARQUIVOS` de `sw.js` (um teste avisa se esquecer) e aumente o número de `VERSAO`.
+
+Para refazer os ícones: `python ferramentas/gerar_icones.py` (grava `icone-192.png` e `icone-512.png` na pasta do projeto).
 
 Spec e plano: `docs/superpowers/`.
 

@@ -1,5 +1,8 @@
 import struct
 import zlib
+from pathlib import Path
+
+RAIZ = Path(__file__).resolve().parent.parent
 
 
 def bloco(tipo, dados):
@@ -32,5 +35,5 @@ def png(tamanho, caminho):
 
 
 for lado in (192, 512):
-    png(lado, f'icone-{lado}.png')
+    png(lado, RAIZ / f'icone-{lado}.png')
     print(f'icone-{lado}.png gerado')

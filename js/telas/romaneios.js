@@ -13,6 +13,7 @@ export async function montarRomaneios(contexto) {
   const cad = servicos.cadastros;
   const raiz = h('section', {});
   let abertoId = null;
+  let gravando = false;
   let erroPendente = null;
 
   const desenhar = () => (abertoId ? desenharDetalhe() : desenharLista());
@@ -59,8 +60,15 @@ export async function montarRomaneios(contexto) {
       class: 'formulario',
       onsubmit: async (ev) => {
         ev.preventDefault();
+        if (gravando) return;
+        gravando = true;
         let novo;
-        const ok = await tentar(erros, async () => { novo = await servicos.romaneios.criar(lerFormulario(form)); });
+        let ok;
+        try {
+          ok = await tentar(erros, async () => { novo = await servicos.romaneios.criar(lerFormulario(form)); });
+        } finally {
+          gravando = false;
+        }
         if (ok) {
           abertoId = novo.id;
           await redesenhar();
@@ -178,9 +186,16 @@ export async function montarRomaneios(contexto) {
       class: 'formulario nao-imprimir',
       onsubmit: async (ev) => {
         ev.preventDefault();
+        if (gravando) return;
+        gravando = true;
         erros.replaceChildren();
         const f = lerFormulario(formItem);
-        const ok = await tentar(errosItem, () => servicos.romaneios.adicionarItem(abertoId, { pacoteId: f.pacoteId, quantidade: numeroDoCampo(f.quantidade) }));
+        let ok;
+        try {
+          ok = await tentar(errosItem, () => servicos.romaneios.adicionarItem(abertoId, { pacoteId: f.pacoteId, quantidade: numeroDoCampo(f.quantidade) }));
+        } finally {
+          gravando = false;
+        }
         if (ok) await redesenhar();
         else errosItem.scrollIntoView({ block: 'nearest' });
       },
