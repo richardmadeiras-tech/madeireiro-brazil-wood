@@ -8,6 +8,7 @@ import { montarCadastros } from './telas/cadastros.js';
 import { montarPacotes } from './telas/pacotes.js';
 import { montarEstufa } from './telas/estufa.js';
 import { montarRomaneios } from './telas/romaneios.js';
+import { montarEstoque } from './telas/estoque.js';
 
 // -- telas: cada tarefa de tela acrescenta uma linha de import acima e uma entrada abaixo --
 const TELAS = {
@@ -15,6 +16,7 @@ const TELAS = {
   pacotes: montarPacotes,
   estufa: montarEstufa,
   romaneios: montarRomaneios,
+  estoque: montarEstoque,
 };
 
 async function mostrarAviso(contexto) {
