@@ -16,13 +16,20 @@ export async function montarRomaneios(contexto) {
   let erroPendente = null;
 
   const desenhar = () => (abertoId ? desenharDetalhe() : desenharLista());
+  const textoDoErro = (e) => (e instanceof ErroDeRegra ? e.erros.join(' ') : `Não consegui gravar: ${e.message}`);
+  // nunca rejeita: se não conseguir desenhar, mostra o erro numa caixa com caminho de volta
   const redesenhar = () => desenhar().catch((e) => {
-    raiz.replaceChildren(h('div', { class: 'erros', role: 'alert' }, h('p', {}, `Não consegui abrir esta tela: ${e.message}`)));
+    const pendente = erroPendente;
+    erroPendente = null;
+    raiz.replaceChildren(h('div', { class: 'erros nao-imprimir', role: 'alert' },
+      pendente && h('p', {}, textoDoErro(pendente)),
+      h('p', {}, `Não consegui abrir esta tela: ${e.message}`),
+      h('button', { type: 'button', class: 'secundario', onclick: () => { abertoId = null; redesenhar(); } }, '← Todos os romaneios')));
   });
   // refaz a tela com o estado real e mostra o erro na tela nova
   async function falhouEDesenhar(e) {
     erroPendente = e;
-    await desenhar();
+    await redesenhar();
   }
 
   function camposCabecalho(r, clientes, veiculos) {
@@ -39,6 +46,7 @@ export async function montarRomaneios(contexto) {
   }
 
   async function desenharLista() {
+    erroPendente = null;
     const [resumo, pessoas, veiculosTodos] = await Promise.all([
       servicos.romaneios.listarResumo(),
       dados.pessoas.listar(),
@@ -55,7 +63,7 @@ export async function montarRomaneios(contexto) {
         const ok = await tentar(erros, async () => { novo = await servicos.romaneios.criar(lerFormulario(form)); });
         if (ok) {
           abertoId = novo.id;
-          await desenhar();
+          await redesenhar();
         }
       },
     },
@@ -95,8 +103,9 @@ export async function montarRomaneios(contexto) {
     const erros = h('div', { class: 'erros nao-imprimir', role: 'alert' });
     const errosItem = h('div', { class: 'erros nao-imprimir', role: 'alert' });
     const topo = async (acao) => {
+      errosItem.replaceChildren();
       const ok = await tentar(erros, acao);
-      if (ok) await desenhar();
+      if (ok) await redesenhar();
       else erros.scrollIntoView({ block: 'nearest' });
     };
 
@@ -124,7 +133,7 @@ export async function montarRomaneios(contexto) {
             return;
           }
           abertoId = null;
-          await desenhar();
+          await redesenhar();
         },
       }, 'Excluir romaneio'));
 
@@ -169,9 +178,10 @@ export async function montarRomaneios(contexto) {
       class: 'formulario nao-imprimir',
       onsubmit: async (ev) => {
         ev.preventDefault();
+        erros.replaceChildren();
         const f = lerFormulario(formItem);
         const ok = await tentar(errosItem, () => servicos.romaneios.adicionarItem(abertoId, { pacoteId: f.pacoteId, quantidade: numeroDoCampo(f.quantidade) }));
-        if (ok) await desenhar();
+        if (ok) await redesenhar();
         else errosItem.scrollIntoView({ block: 'nearest' });
       },
     },
@@ -203,7 +213,7 @@ export async function montarRomaneios(contexto) {
               await falhouEDesenhar(e);
               return;
             }
-            await desenhar();
+            await redesenhar();
           },
         }, 'Remover'),
       });
