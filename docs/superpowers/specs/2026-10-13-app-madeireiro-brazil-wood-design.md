@@ -1,6 +1,6 @@
 # App Madeireiro Brazil Wood: desenho da v1
 
-Data: 2026-10-13. Estado: aguardando revisão do Richard.
+Data: 2026-10-13. Estado: aprovado para planejar; plano em `docs/superpowers/plans/2026-10-13-app-madeireiro-brazil-wood.md`.
 
 ## Objetivo
 
@@ -38,7 +38,7 @@ Todo registro tem: `id`, `criadoEm`, `alteradoEm`, `excluidoEm` (exclusão lógi
 - **LocalEstoque:** nome.
 - **Pessoa:** nome, documento, telefone, tipo (cliente, fornecedor), observação.
 - **Veiculo:** placa, descrição.
-- **Pacote:** tipo (MS, PB, PF), numero, numeroAutex, numeroControleInterno, especieId, bitolaId, comprimento, quantidade, peso, qualidade, qtdAmarras, abonoComprimento, abonoLargura, abonoEspessura, somarAbono, localEstoqueId, pacoteOrigemId, dtRecebimento, dtEntradaEstoque, dtFinalizacao, statusSecagem (verde, em estufa, seco), observacao, hashQr.
+- **Pacote:** tipo (MS, PB, PF), numero, numeroAutex, numeroControleInterno, especieId, bitolaId, comprimento, quantidade, peso, qualidade, qtdAmarras, abonoComprimento, abonoLargura, abonoEspessura, somarAbono, localEstoqueId, pacoteOrigemId, dtRecebimento, dtEntradaEstoque, dtFinalizacao, observacao. O status de secagem (verde, em estufa, seco) não é gravado: é calculado a partir das passagens pela estufa.
 - **PassagemEstufa:** pacoteId, estufa (nome), dtEntrada, dtSaida, umidadeEntrada, umidadeSaida, tipoSecagem.
 - **RomaneioVenda:** numero, data, clienteId, veiculoId, placa, notaFiscal, dof, guiaFlorestal, observacao, dtFinalizacao, status (aberto, finalizado).
 - **ItemRomaneio:** romaneioId, pacoteId, quantidadeBaixada.
@@ -63,7 +63,7 @@ Todo registro tem: `id`, `criadoEm`, `alteradoEm`, `excluidoEm` (exclusão lógi
 - Toda gravação confirma o resultado. Se falhar, a tela avisa na hora; o app nunca perde dado em silêncio.
 - O app lembra de exportar o backup quando passa muito tempo sem exportar.
 - Importar backup mostra o que vai mudar e pede confirmação antes de substituir qualquer dado.
-- Exclusão é lógica e pode ser desfeita.
+- Exclusão é lógica: o registro some das telas, mas continua gravado e entra no backup. A v1 não tem botão de desfazer.
 
 ## Testes
 
@@ -79,6 +79,14 @@ Todo registro tem: `id`, `criadoEm`, `alteradoEm`, `excluidoEm` (exclusão lógi
 4. Romaneio de venda e baixa.
 5. Estoque e relatórios.
 6. Backup e instalação no celular.
+
+## Refinamentos definidos no plano
+
+- Datas guardadas como `AAAA-MM-DD`; espessura e largura em cm, comprimento em m.
+- Abono: com `somarAbono`, as medidas de abono são somadas às medidas do pacote no volume comercial.
+- A baixa reserva o saldo assim que o item entra num romaneio aberto; romaneio aberto pode ser excluído (devolve o saldo); romaneio finalizado precisa ser reaberto antes.
+- O PDF do romaneio sai pela impressão do navegador ("Salvar como PDF").
+- Pessoa tem um único tipo (cliente ou fornecedor).
 
 ## Pontos em aberto
 
