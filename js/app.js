@@ -68,6 +68,7 @@ async function iniciar() {
   }
   window.addEventListener('hashchange', () => desenhar(contexto));
   await desenhar(contexto);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
 iniciar();
