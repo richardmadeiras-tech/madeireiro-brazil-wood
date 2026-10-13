@@ -52,5 +52,8 @@ export async function importarBackup(armazem, backup) {
 
 export function precisaLembrarBackup(ultimoISO, agoraISO, dias = 7) {
   if (!ultimoISO) return true;
-  return (Date.parse(agoraISO) - Date.parse(ultimoISO)) / 86400000 >= dias;
+  const ultimo = Date.parse(ultimoISO);
+  const agora = Date.parse(agoraISO);
+  if (!Number.isFinite(ultimo) || !Number.isFinite(agora) || ultimo > agora) return true;
+  return (agora - ultimo) / 86400000 >= dias;
 }

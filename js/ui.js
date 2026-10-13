@@ -50,7 +50,9 @@ export function lerFormulario(form) {
 export function mostrarErros(elemento, erro) {
   elemento.replaceChildren();
   if (!erro) return;
-  const lista = erro instanceof ErroDeRegra ? erro.erros : [`Não consegui gravar: ${erro.message}`];
+  const lista = erro instanceof ErroDeRegra && erro.erros.length
+    ? erro.erros
+    : [`Não consegui gravar: ${erro.message || String(erro)}`];
   elemento.append(...lista.map((t) => h('p', {}, t)));
 }
 
@@ -60,7 +62,7 @@ export async function tentar(elementoErros, acao) {
     await acao();
     return true;
   } catch (e) {
-    mostrarErros(elementoErros, e);
+    mostrarErros(elementoErros, e ?? new Error('erro desconhecido'));
     return false;
   }
 }

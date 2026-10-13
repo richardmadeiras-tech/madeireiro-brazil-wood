@@ -24,29 +24,39 @@ const TELAS = {
 async function mostrarAviso(contexto) {
   const area = document.getElementById('aviso');
   area.replaceChildren();
-  const pacotes = await contexto.dados.pacotes.listar();
-  if (pacotes.length && precisaLembrarBackup(lerUltimoBackup(), new Date().toISOString())) {
-    area.append(h('div', { class: 'lembrete' },
-      'Faz tempo que você não exporta um backup dos seus dados. ',
-      h('a', { href: '#/backup' }, 'Exportar agora')));
+  try {
+    const pacotes = await contexto.dados.pacotes.listar();
+    if (pacotes.length && precisaLembrarBackup(lerUltimoBackup(), new Date().toISOString())) {
+      area.append(h('div', { class: 'lembrete' },
+        'Faz tempo que você não exporta um backup dos seus dados. ',
+        h('a', { href: '#/backup' }, 'Exportar agora')));
+    }
+  } catch {
+    // o aviso é opcional: se falhar, a tela continua normal
   }
 }
 
+let ultimoDesenho = 0;
+
 async function desenhar(contexto) {
+  const meu = ++ultimoDesenho;
   const nome = location.hash.replace(/^#\//, '') || 'estoque';
   const raiz = document.getElementById('tela');
   for (const a of document.querySelectorAll('#menu a')) {
     a.classList.toggle('ativo', a.getAttribute('href') === `#/${nome}`);
   }
-  const montar = TELAS[nome] ?? TELAS.estoque;
+  const montar = Object.hasOwn(TELAS, nome) ? TELAS[nome] : TELAS.estoque;
   if (!montar) {
     raiz.replaceChildren(h('p', { class: 'vazio' }, 'Esta tela ainda não foi instalada.'));
     return;
   }
   try {
-    raiz.replaceChildren(await montar(contexto));
+    const tela = await montar(contexto);
+    if (meu !== ultimoDesenho) return;
+    raiz.replaceChildren(tela);
   } catch (e) {
-    raiz.replaceChildren(h('div', { class: 'erros' }, h('p', {}, `Não consegui abrir esta tela: ${e.message}`)));
+    if (meu !== ultimoDesenho) return;
+    raiz.replaceChildren(h('div', { class: 'erros', role: 'alert' }, h('p', {}, `Não consegui abrir esta tela: ${e?.message || e}`)));
   }
   await mostrarAviso(contexto);
 }
@@ -66,9 +76,12 @@ async function iniciar() {
       h('p', {}, 'Saia do modo anônimo, libere o armazenamento do site nas configurações do navegador e recarregue a página.')));
     return;
   }
-  window.addEventListener('hashchange', () => desenhar(contexto));
-  await desenhar(contexto);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  const desenharSeguro = () => desenhar(contexto).catch((e) => {
+    raiz.replaceChildren(h('div', { class: 'erros', role: 'alert' }, h('p', {}, `Não consegui abrir esta tela: ${e?.message || e}`)));
+  });
+  window.addEventListener('hashchange', desenharSeguro);
+  await desenharSeguro();
 }
 
 iniciar();

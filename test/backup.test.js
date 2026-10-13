@@ -80,3 +80,10 @@ test('precisaLembrarBackup: nunca, recente e antigo', () => {
   assert.equal(precisaLembrarBackup('2026-10-06T12:00:01.000Z', agora), false);
   assert.equal(precisaLembrarBackup('2026-10-10T12:00:00.000Z', agora, 3), true);
 });
+
+test('precisaLembrarBackup: data ilegível ou no futuro pede backup', () => {
+  const agora = '2026-10-13T12:00:00.000Z';
+  assert.equal(precisaLembrarBackup('lixo', agora), true);
+  assert.equal(precisaLembrarBackup('2027-01-01T00:00:00.000Z', agora), true);
+  assert.equal(precisaLembrarBackup('2026-10-12T12:00:00.000Z', 'lixo'), true);
+});

@@ -18,7 +18,7 @@ function transacao(db, nomes, modo, fn) {
     }
     let resultado;
     tx.oncomplete = () => ok(resultado);
-    tx.onerror = () => erro(tx.error);
+    tx.onerror = (ev) => erro(ev?.target?.error || tx.error || new Error('O navegador não conseguiu gravar.'));
     tx.onabort = () => erro(tx.error || new Error('A gravação foi cancelada pelo navegador.'));
     Promise.resolve()
       .then(() => fn(tx))
@@ -60,6 +60,10 @@ export function abrirArmazemIndexedDB(nome = 'madeireiro-brazil-wood') {
     };
     abrir.onerror = () => erro(abrir.error || new Error('O navegador não deixou abrir o armazenamento local.'));
     abrir.onblocked = () => erro(new Error('O armazenamento local está bloqueado por outra aba do app. Feche as outras abas.'));
-    abrir.onsuccess = () => ok(montar(abrir.result));
+    abrir.onsuccess = () => {
+      const db = abrir.result;
+      db.onversionchange = () => db.close();
+      ok(montar(db));
+    };
   });
 }
