@@ -1,4 +1,5 @@
-import { h, campo, selecao, lerFormulario, tentar, tabela, confirmar } from '../ui.js';
+import { h, campo, selecao, lerFormulario, tentar, tabela, confirmar, mostrarErros } from '../ui.js';
+import { ErroDeRegra } from '../servicos/erro.js';
 import { formatarData, formatarM3, formatarNumero, hojeISO, numeroDoCampo } from '../regras/formato.js';
 
 const porNome = (a, b) => a.nome.localeCompare(b.nome, 'pt-BR');
@@ -12,8 +13,17 @@ export async function montarRomaneios(contexto) {
   const cad = servicos.cadastros;
   const raiz = h('section', {});
   let abertoId = null;
+  let erroPendente = null;
 
   const desenhar = () => (abertoId ? desenharDetalhe() : desenharLista());
+  const redesenhar = () => desenhar().catch((e) => {
+    raiz.replaceChildren(h('div', { class: 'erros', role: 'alert' }, h('p', {}, `Não consegui abrir esta tela: ${e.message}`)));
+  });
+  // refaz a tela com o estado real e mostra o erro na tela nova
+  async function falhouEDesenhar(e) {
+    erroPendente = e;
+    await desenhar();
+  }
 
   function camposCabecalho(r, clientes, veiculos) {
     return [
@@ -36,7 +46,7 @@ export async function montarRomaneios(contexto) {
     ]);
     const veiculos = [...veiculosTodos].sort(porPlaca);
     const clientes = pessoas.filter((p) => p.tipo === 'cliente').sort(porNome);
-    const erros = h('div', { class: 'erros', role: 'alert' });
+    const erros = h('div', { class: 'erros nao-imprimir', role: 'alert' });
     const form = h('form', {
       class: 'formulario',
       onsubmit: async (ev) => {
@@ -62,7 +72,7 @@ export async function montarRomaneios(contexto) {
       { titulo: 'Peças', classe: 'num', valor: (r) => r.totais.pecas },
       { titulo: 'm³ bruto', classe: 'num', valor: (r) => formatarNumero(r.totais.m3Bruto, 3) },
       { titulo: 'Situação', valor: (r) => h('span', { class: `etiqueta ${r.romaneio.status}` }, rotuloStatus(r.romaneio.status)) },
-      { titulo: '', valor: (r) => h('button', { type: 'button', class: 'secundario pequeno', onclick: () => { abertoId = r.romaneio.id; desenhar(); } }, 'Abrir') },
+      { titulo: '', valor: (r) => h('button', { type: 'button', class: 'secundario pequeno', onclick: () => { abertoId = r.romaneio.id; redesenhar(); } }, 'Abrir') },
     ];
     const clientesVazio = clientes.length === 0
       ? h('p', { class: 'vazio' }, 'Cadastre ao menos um cliente em Cadastros para criar um romaneio.')
@@ -82,17 +92,23 @@ export async function montarRomaneios(contexto) {
     const linhasItens = [...d.linhas].sort(porPacote);
     const aberto = romaneio.status === 'aberto';
     const clientes = pessoas.filter((p) => p.tipo === 'cliente').sort(porNome);
-    const erros = h('div', { class: 'erros', role: 'alert' });
+    const erros = h('div', { class: 'erros nao-imprimir', role: 'alert' });
+    const errosItem = h('div', { class: 'erros nao-imprimir', role: 'alert' });
+    const topo = async (acao) => {
+      const ok = await tentar(erros, acao);
+      if (ok) await desenhar();
+      else erros.scrollIntoView({ block: 'nearest' });
+    };
 
     const acoes = h('div', { class: 'acoes nao-imprimir' },
-      h('button', { type: 'button', class: 'secundario', onclick: () => { abertoId = null; desenhar(); } }, '← Todos os romaneios'),
-      aberto && h('button', { type: 'button', onclick: async () => { if (await tentar(erros, () => servicos.romaneios.finalizar(abertoId))) await desenhar(); } }, 'Finalizar romaneio'),
+      h('button', { type: 'button', class: 'secundario', onclick: () => { abertoId = null; redesenhar(); } }, '← Todos os romaneios'),
+      aberto && h('button', { type: 'button', onclick: () => topo(() => servicos.romaneios.finalizar(abertoId)) }, 'Finalizar romaneio'),
       !aberto && h('button', {
         type: 'button',
         class: 'secundario',
         onclick: async () => {
           if (!confirmar('Reabrir este romaneio para alterar?')) return;
-          if (await tentar(erros, () => servicos.romaneios.reabrir(abertoId))) await desenhar();
+          await topo(() => servicos.romaneios.reabrir(abertoId));
         },
       }, 'Reabrir'),
       h('button', { type: 'button', class: 'secundario', onclick: () => window.print() }, 'Imprimir ou salvar em PDF'),
@@ -101,10 +117,14 @@ export async function montarRomaneios(contexto) {
         class: 'perigo',
         onclick: async () => {
           if (!confirmar(`Excluir o romaneio ${romaneio.numero}? As peças voltam para o estoque.`)) return;
-          if (await tentar(erros, () => servicos.romaneios.excluir(abertoId))) {
-            abertoId = null;
-            await desenhar();
+          try {
+            await servicos.romaneios.excluir(abertoId);
+          } catch (e) {
+            await falhouEDesenhar(e instanceof ErroDeRegra ? e : new Error(`${e.message}. Tente excluir de novo.`));
+            return;
           }
+          abertoId = null;
+          await desenhar();
         },
       }, 'Excluir romaneio'));
 
@@ -124,7 +144,7 @@ export async function montarRomaneios(contexto) {
       class: 'formulario nao-imprimir',
       onsubmit: async (ev) => {
         ev.preventDefault();
-        if (await tentar(erros, () => servicos.romaneios.atualizar(abertoId, lerFormulario(formCab)))) await desenhar();
+        await topo(() => servicos.romaneios.atualizar(abertoId, lerFormulario(formCab)));
       },
     },
     h('h2', {}, 'Dados do romaneio'),
@@ -150,13 +170,15 @@ export async function montarRomaneios(contexto) {
       onsubmit: async (ev) => {
         ev.preventDefault();
         const f = lerFormulario(formItem);
-        const ok = await tentar(erros, () => servicos.romaneios.adicionarItem(abertoId, { pacoteId: f.pacoteId, quantidade: numeroDoCampo(f.quantidade) }));
+        const ok = await tentar(errosItem, () => servicos.romaneios.adicionarItem(abertoId, { pacoteId: f.pacoteId, quantidade: numeroDoCampo(f.quantidade) }));
         if (ok) await desenhar();
+        else errosItem.scrollIntoView({ block: 'nearest' });
       },
     },
     h('h2', {}, 'Incluir pacote (baixa)'),
     seletor,
     quantidade,
+    errosItem,
     h('div', { class: 'acoes' }, h('button', { type: 'submit' }, 'Incluir no romaneio')));
 
     const colunas = [
@@ -170,10 +192,19 @@ export async function montarRomaneios(contexto) {
     if (aberto) {
       colunas.push({
         titulo: '',
+        classe: 'nao-imprimir',
         valor: (l) => h('button', {
           type: 'button',
           class: 'perigo pequeno nao-imprimir',
-          onclick: async () => { if (await tentar(erros, () => servicos.romaneios.removerItem(l.item.id))) await desenhar(); },
+          onclick: async () => {
+            try {
+              await servicos.romaneios.removerItem(l.item.id);
+            } catch (e) {
+              await falhouEDesenhar(e);
+              return;
+            }
+            await desenhar();
+          },
         }, 'Remover'),
       });
     }
@@ -188,6 +219,11 @@ export async function montarRomaneios(contexto) {
       tabela(colunas, linhasItens, 'Nenhum pacote incluído ainda.'),
       h('p', { class: 'totais' }, `${totais.pacotes} pacote(s) · ${totais.pecas} peça(s) · ${formatarM3(totais.m3Bruto)} brutos · ${formatarM3(totais.m3Comercial)} comerciais`),
     ].filter(Boolean));
+    if (erroPendente) {
+      mostrarErros(erros, erroPendente);
+      erroPendente = null;
+      erros.scrollIntoView({ block: 'nearest' });
+    }
   }
 
   await desenhar();
