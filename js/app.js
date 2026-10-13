@@ -6,11 +6,13 @@ import { lerUltimoBackup } from './dados/ultimoBackup.js';
 import { h } from './ui.js';
 import { montarCadastros } from './telas/cadastros.js';
 import { montarPacotes } from './telas/pacotes.js';
+import { montarEstufa } from './telas/estufa.js';
 
 // -- telas: cada tarefa de tela acrescenta uma linha de import acima e uma entrada abaixo --
 const TELAS = {
   cadastros: montarCadastros,
   pacotes: montarPacotes,
+  estufa: montarEstufa,
 };
 
 async function mostrarAviso(contexto) {
